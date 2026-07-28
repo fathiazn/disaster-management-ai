@@ -1,12 +1,17 @@
+from message_schema import AgentMessage
+
+
 def router_agent(question):
     """
     Routes a user's question to the correct agent.
 
     Returns:
-        "Emergency"
-        "Situation"
-        "Preparedness"
-        "Unknown"
+        AgentMessage object containing:
+        sender
+        receiver
+        task
+        data
+        status
     """
 
     question = question.lower().strip()
@@ -111,22 +116,78 @@ def router_agent(question):
     ]
 
 
-    # Check Emergency
+    # -----------------------------
+    # Emergency Routing
+    # -----------------------------
     for word in emergency_words:
         if word in question:
-            return "Emergency"
+
+            return AgentMessage(
+                sender="Router Agent",
+                receiver="Emergency Agent",
+                task="Handle emergency request",
+                data={
+                    "question": question,
+                    "category": "Emergency"
+                }
+            )
 
 
-    # Check Situation
+    # -----------------------------
+    # Situation Routing
+    # -----------------------------
     for word in situation_words:
         if word in question:
-            return "Situation"
+
+            return AgentMessage(
+                sender="Router Agent",
+                receiver="Situation Agent",
+                task="Analyze current situation",
+                data={
+                    "question": question,
+                    "category": "Situation"
+                }
+            )
 
 
-    # Check Preparedness
+    # -----------------------------
+    # Preparedness Routing
+    # -----------------------------
     for word in preparedness_words:
         if word in question:
-            return "Preparedness"
+
+            return AgentMessage(
+                sender="Router Agent",
+                receiver="Preparedness Agent",
+                task="Provide preparedness guidance",
+                data={
+                    "question": question,
+                    "category": "Preparedness"
+                }
+            )
 
 
-    return "Unknown"
+    # -----------------------------
+    # Unknown
+    # -----------------------------
+    return AgentMessage(
+        sender="Router Agent",
+        receiver="Unknown",
+        task="No suitable agent found",
+        data={
+            "question": question,
+            "category": "Unknown"
+        }
+    )
+
+
+# -----------------------------
+# Testing
+# -----------------------------
+if __name__ == "__main__":
+
+    result = router_agent(
+        "My house is on fire, I need help"
+    )
+
+    print(result)

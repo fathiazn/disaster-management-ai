@@ -9,38 +9,38 @@ from reflection_agent import reflection_agent
 
 def orchestrator(question):
 
-    # Router decides which agent handles the request
+    # Router returns structured AgentMessage
     route = router_agent(question)
 
 
     # Initial structured message
     message = {
-        "sender": "RouterAgent",
-        "receiver": route + "Agent",
-        "task": "handle_disaster_query",
-        "question": question,
-        "route": route,
+        "sender": route.sender,
+        "receiver": route.receiver,
+        "task": route.task,
+        "question": route.data["question"],
+        "route": route.data["category"],
         "answer": "",
         "plan": ""
     }
 
 
     # Send task to selected agent
-    if route == "Preparedness":
+    if route.receiver == "Preparedness Agent":
 
         message["answer"] = preparedness_agent(
             message["question"]
         )
 
 
-    elif route == "Emergency":
+    elif route.receiver == "Emergency Agent":
 
         message["answer"] = emergency_agent(
             message["question"]
         )
 
 
-    elif route == "Situation":
+    elif route.receiver == "Situation Agent":
 
         message["answer"] = situation_agent(
             message["question"]
@@ -57,11 +57,10 @@ def orchestrator(question):
         )
 
 
-    # Agent-to-agent structured message:
     # Disaster Agent → Planner Agent
     planner_message = {
-        "sender": route + "Agent",
-        "receiver": "PlannerAgent",
+        "sender": route.receiver,
+        "receiver": "Planner Agent",
         "task": "create_action_plan",
         "content": {
             "question": message["question"],
@@ -89,20 +88,30 @@ Recommended Action Plan
 """
 
 
-    # Agent-to-agent structured message:
     # Planner Agent → Reflection Agent
     reflection_message = {
-        "sender": "PlannerAgent",
-        "receiver": "ReflectionAgent",
+        "sender": "Planner Agent",
+        "receiver": "Reflection Agent",
         "task": "review_final_response",
         "content": combined_response
     }
 
 
-    # Reflection receives message content
+    # Reflection receives structured message
     final_answer = reflection_agent(
         reflection_message
     )
 
 
     return final_answer
+
+
+
+# Testing
+if __name__ == "__main__":
+
+    result = orchestrator(
+        "My house is on fire, I need help"
+    )
+
+    print(result)
